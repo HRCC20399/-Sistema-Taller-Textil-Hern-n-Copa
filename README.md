@@ -1,1 +1,0 @@
-# -Sistema-Taller-Textil-Hern-n-Copa
