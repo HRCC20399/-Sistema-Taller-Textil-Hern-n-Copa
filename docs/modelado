@@ -1,1 +1,104 @@
-
+Codigo SQL
+-- Crear base de datos si no existe
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name =
+'TallerTextilDB')
+CREATE DATABASE TallerTextilDB;
+GO
+USE TallerTextilDB;
+GO
+-- Tabla Clientes
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[Clientes]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[Clientes](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [Nombre] NVARCHAR(100) NOT NULL,
+ [Telefono] NVARCHAR(20),
+ [CanalPedido] NVARCHAR(50)
+ )
+END
+GO
+-- Tabla Pedidos
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[Pedidos]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[Pedidos](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [FechaPedido] DATE NOT NULL,
+ [FechaEntrega] DATE NOT NULL,
+ [Estado] NVARCHAR(50),
+ [ClienteID] INT NOT NULL,
+ FOREIGN KEY (ClienteID) REFERENCES Clientes(ID)
+ )
+END
+GO
+-- Tabla Costureras
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[Costureras]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[Costureras](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [Nombre] NVARCHAR(100) NOT NULL,
+ [Experiencia] NVARCHAR(50)
+ )
+END
+GO
+-- Tabla Prendas
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[Prendas]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[Prendas](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [Tipo] NVARCHAR(50),
+ [Talla] NVARCHAR(10),
+ [PedidoID] INT NOT NULL,
+ [CostureraID] INT NOT NULL,
+ FOREIGN KEY (PedidoID) REFERENCES Pedidos(ID),
+ FOREIGN KEY (CostureraID) REFERENCES Costureras(ID)
+ )
+END
+GO
+-- Tabla Telas
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[Telas]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[Telas](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [Tipo] NVARCHAR(50),
+ [Color] NVARCHAR(50),
+ [CantidadDisponible] DECIMAL(10,2),
+ [UnidadMedida] NVARCHAR(20)
+ )
+END
+GO
+-- Tabla Movimientos de Tela
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[MovimientosTela]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[MovimientosTela](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [Fecha] DATE NOT NULL,
+ [TipoMovimiento] NVARCHAR(20), -- Entrada o Salida
+ [Cantidad] DECIMAL(10,2),
+ [TelaID] INT NOT NULL,
+ FOREIGN KEY (TelaID) REFERENCES Telas(ID)
+ )
+END
+GO
+-- Tabla Finanzas por Pedido
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id =
+OBJECT_ID(N'[dbo].[FinanzasPedido]') AND type = N'U')
+BEGIN
+ CREATE TABLE [dbo].[FinanzasPedido](
+ [ID] INT PRIMARY KEY IDENTITY(1,1),
+ [PedidoID] INT NOT NULL,
+ [CostoTela] DECIMAL(10,2),
+ [CostoManoObra] DECIMAL(10,2),
+ [OtrosCostos] DECIMAL(10,2),
+ [PagoCliente] DECIMAL(10,2),
+ [Ganancia] AS ([PagoCliente] - ([CostoTela] + [CostoManoObra] +
+[OtrosCostos])),
+ FOREIGN KEY (PedidoID) REFERENCES Pedidos(ID)
+ )
+END
+GO
